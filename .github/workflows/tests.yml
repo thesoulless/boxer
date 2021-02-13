@@ -9,6 +9,8 @@ jobs:
     name: tests
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@master
+
     - name: Runs tests
       uses: cedrickring/golang-action@1.6.0
       with:
