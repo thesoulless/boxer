@@ -1,0 +1,15 @@
+name: Runs tests
+on:
+  push:
+    branches:
+      - develop
+      - master
+jobs:
+  checks:
+    name: tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: Runs tests
+      uses: cedrickring/golang-action@1.6.0
+      with:
+        args: make test
