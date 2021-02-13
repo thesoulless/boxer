@@ -33,7 +33,7 @@ func TestBacktrace(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := Backtrace(tt.args.size); !reflect.DeepEqual(got, tt.want) {
+			if got := Backtrace(tt.args.size); !reflect.DeepEqual(got[0], tt.want[0]) || !reflect.DeepEqual(got[2], tt.want[2]) {
 				t.Errorf("Backtrace() = %v, want %v", got, tt.want)
 			}
 		})
