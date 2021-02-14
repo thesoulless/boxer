@@ -1,4 +1,5 @@
 # Boxer
+![Tests](https://github.com/thesoulless/boxer/workflows/Tests/badge.svg?branch=master)
 
 *I will work harder!*
 
