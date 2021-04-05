@@ -84,7 +84,7 @@ func getHighBoxer() *boxer {
 		Concurrency:    runtime.NumCPU(),
 		queues:         []string{"high"},
 		done:           make(chan interface{}),
-		shutdownWaiter: &sync.WaitGroup{},
+		shutdownWaiter: sync.WaitGroup{},
 		jobHandlers:    map[string]handler{},
 		jobs:           chs,
 		onFlyCounts:    onFlyCounts,
@@ -104,7 +104,7 @@ func getDefaultBoxer() *boxer {
 		Concurrency:    runtime.NumCPU(),
 		queues:         []string{"default"},
 		done:           make(chan interface{}),
-		shutdownWaiter: &sync.WaitGroup{},
+		shutdownWaiter: sync.WaitGroup{},
 		jobHandlers:    map[string]handler{},
 		jobs:           defaultChs,
 		onFlyCounts:    onFlyCountsDefault,
@@ -246,7 +246,7 @@ func Test_boxer_Count(t *testing.T) {
 		Concurrency    int
 		queues         []string
 		done           chan interface{}
-		shutdownWaiter *sync.WaitGroup
+		shutdownWaiter sync.WaitGroup
 		jobHandlers    map[string]handler
 		wtr            bytes.Buffer
 		jobs           jobPayload
@@ -273,7 +273,7 @@ func Test_boxer_Count(t *testing.T) {
 				Concurrency:    2,
 				queues:         []string{"default"},
 				done:           make(chan interface{}),
-				shutdownWaiter: &sync.WaitGroup{},
+				shutdownWaiter: sync.WaitGroup{},
 				jobHandlers:    make(map[string]handler),
 				wtr:            bytes.Buffer{},
 				jobs:           chs,
@@ -303,7 +303,7 @@ func Test_boxer_Fail(t *testing.T) {
 		Concurrency    int
 		queues         []string
 		done           chan interface{}
-		shutdownWaiter *sync.WaitGroup
+		shutdownWaiter sync.WaitGroup
 		jobHandlers    map[string]handler
 		wtr            bytes.Buffer
 		jobs           jobPayload
@@ -333,7 +333,7 @@ func Test_boxer_Fail(t *testing.T) {
 				Concurrency:    2,
 				queues:         []string{"default"},
 				done:           make(chan interface{}),
-				shutdownWaiter: &sync.WaitGroup{},
+				shutdownWaiter: sync.WaitGroup{},
 				jobHandlers:    make(map[string]handler),
 				wtr:            bytes.Buffer{},
 				jobs:           chs,
@@ -367,7 +367,7 @@ func Test_boxer_Fetch(t *testing.T) {
 		Concurrency    int
 		queues         []string
 		done           chan interface{}
-		shutdownWaiter *sync.WaitGroup
+		shutdownWaiter sync.WaitGroup
 		jobHandlers    map[string]handler
 		wtr            bytes.Buffer
 		jobs           jobPayload
@@ -404,7 +404,7 @@ func Test_boxer_Fetch(t *testing.T) {
 				Concurrency:    2,
 				queues:         []string{"default"},
 				done:           make(chan interface{}),
-				shutdownWaiter: &sync.WaitGroup{},
+				shutdownWaiter: sync.WaitGroup{},
 				jobHandlers:    make(map[string]handler),
 				wtr:            bytes.Buffer{},
 				jobs:           chs,
@@ -442,7 +442,7 @@ func Test_boxer_Push(t *testing.T) {
 		Concurrency    int
 		queues         []string
 		done           chan interface{}
-		shutdownWaiter *sync.WaitGroup
+		shutdownWaiter sync.WaitGroup
 		jobHandlers    map[string]handler
 		wtr            bytes.Buffer
 		jobs           jobPayload
@@ -479,7 +479,7 @@ func Test_boxer_Push(t *testing.T) {
 				Concurrency:    2,
 				queues:         []string{"default"},
 				done:           make(chan interface{}),
-				shutdownWaiter: &sync.WaitGroup{},
+				shutdownWaiter: sync.WaitGroup{},
 				jobHandlers:    make(map[string]handler),
 				wtr:            bytes.Buffer{},
 				jobs:           chs,
