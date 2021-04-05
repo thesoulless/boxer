@@ -85,7 +85,6 @@ func getHighBoxer() *boxer {
 		queues:         []string{"high"},
 		done:           make(chan interface{}),
 		shutdownWaiter: &sync.WaitGroup{},
-		shtdnLock:      &sync.Mutex{},
 		jobHandlers:    map[string]handler{},
 		jobs:           chs,
 		onFlyCounts:    onFlyCounts,
@@ -106,7 +105,6 @@ func getDefaultBoxer() *boxer {
 		queues:         []string{"default"},
 		done:           make(chan interface{}),
 		shutdownWaiter: &sync.WaitGroup{},
-		shtdnLock:      &sync.Mutex{},
 		jobHandlers:    map[string]handler{},
 		jobs:           defaultChs,
 		onFlyCounts:    onFlyCountsDefault,
@@ -290,7 +288,6 @@ func Test_boxer_Count(t *testing.T) {
 				queues:         tt.fields.queues,
 				done:           tt.fields.done,
 				shutdownWaiter: tt.fields.shutdownWaiter,
-				shtdnLock:      &sync.Mutex{},
 				jobHandlers:    tt.fields.jobHandlers,
 				jobs:           tt.fields.jobs,
 			}
@@ -356,7 +353,6 @@ func Test_boxer_Fail(t *testing.T) {
 				queues:         tt.fields.queues,
 				done:           tt.fields.done,
 				shutdownWaiter: tt.fields.shutdownWaiter,
-				shtdnLock:      tt.fields.shtdnLock,
 				jobHandlers:    tt.fields.jobHandlers,
 				jobs:           tt.fields.jobs,
 			}
@@ -429,7 +425,6 @@ func Test_boxer_Fetch(t *testing.T) {
 				queues:         tt.fields.queues,
 				done:           tt.fields.done,
 				shutdownWaiter: tt.fields.shutdownWaiter,
-				shtdnLock:      tt.fields.shtdnLock,
 				jobHandlers:    tt.fields.jobHandlers,
 				jobs:           tt.fields.jobs,
 			}
@@ -506,7 +501,6 @@ func Test_boxer_Push(t *testing.T) {
 				queues:         tt.fields.queues,
 				done:           tt.fields.done,
 				shutdownWaiter: tt.fields.shutdownWaiter,
-				shtdnLock:      tt.fields.shtdnLock,
 				jobHandlers:    tt.fields.jobHandlers,
 				jobs:           tt.fields.jobs,
 			}
@@ -670,7 +664,6 @@ func Test_boxer_Terminate(t *testing.T) {
 				queues:         tt.fields.queues,
 				done:           tt.fields.done,
 				shutdownWaiter: tt.fields.shutdownWaiter,
-				shtdnLock:      tt.fields.shtdnLock,
 				jobHandlers:    tt.fields.jobHandlers,
 				jobs:           tt.fields.jobs,
 				count:          tt.fields.count,
