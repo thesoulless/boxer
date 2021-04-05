@@ -1,5 +1,7 @@
 # Boxer
 ![Tests](https://github.com/thesoulless/boxer/workflows/Tests/badge.svg?branch=master)
+![](https://img.shields.io/github/v/tag/thesoulless/boxer?label=&logo=github&sort=semver)
+![](https://img.shields.io/badge/godoc-docs-blue?label=&logo=go)
 
 *I will work harder!*
 
