@@ -76,7 +76,7 @@ type boxer struct {
 	queues []string
 
 	done           chan interface{}
-	shutdownWaiter *sync.WaitGroup
+	shutdownWaiter sync.WaitGroup
 	jobHandlers    map[string]handler
 
 	jobs        jobPayload
@@ -102,7 +102,7 @@ func New(withMetrics bool, namespace, subsystem string, queues ...string) (Boxer
 		Concurrency:    runtime.NumCPU(),
 		queues:         queues,
 		done:           make(chan interface{}),
-		shutdownWaiter: &sync.WaitGroup{},
+		shutdownWaiter: sync.WaitGroup{},
 		jobHandlers:    map[string]handler{},
 		jobs:           chs,
 		count:          0,
