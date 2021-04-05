@@ -84,7 +84,8 @@ func getHighBoxer() *boxer {
 		Concurrency:    runtime.NumCPU(),
 		queues:         []string{"high"},
 		done:           make(chan interface{}),
-		shutdownWaiter: sync.WaitGroup{},
+		shutdownWaiter: &sync.WaitGroup{},
+		shtdnLock:      &sync.Mutex{},
 		jobHandlers:    map[string]handler{},
 		jobs:           chs,
 		onFlyCounts:    onFlyCounts,
@@ -104,7 +105,8 @@ func getDefaultBoxer() *boxer {
 		Concurrency:    runtime.NumCPU(),
 		queues:         []string{"default"},
 		done:           make(chan interface{}),
-		shutdownWaiter: sync.WaitGroup{},
+		shutdownWaiter: &sync.WaitGroup{},
+		shtdnLock:      &sync.Mutex{},
 		jobHandlers:    map[string]handler{},
 		jobs:           defaultChs,
 		onFlyCounts:    onFlyCountsDefault,
@@ -166,7 +168,7 @@ func TestNewBoxer(t *testing.T) {
 				return
 			}
 			if !cmp.Equal(got, tt.want,
-				cmp.Comparer(func(x, y boxer) bool {
+				cmp.Comparer(func(x, y *boxer) bool {
 					for _, v := range y.queues {
 						_, ok1 := x.onFlyCounts[v]
 						_, ok2 := y.onFlyCounts[v]
@@ -181,7 +183,7 @@ func TestNewBoxer(t *testing.T) {
 						}*/
 					}
 
-					//if x.count != y.count || x.Concurrency != y.Concurrency {
+					// if x.count != y.count || x.Concurrency != y.Concurrency {
 					//	return false
 					//}
 
@@ -246,7 +248,7 @@ func Test_boxer_Count(t *testing.T) {
 		Concurrency    int
 		queues         []string
 		done           chan interface{}
-		shutdownWaiter sync.WaitGroup
+		shutdownWaiter *sync.WaitGroup
 		jobHandlers    map[string]handler
 		wtr            bytes.Buffer
 		jobs           jobPayload
@@ -273,7 +275,7 @@ func Test_boxer_Count(t *testing.T) {
 				Concurrency:    2,
 				queues:         []string{"default"},
 				done:           make(chan interface{}),
-				shutdownWaiter: sync.WaitGroup{},
+				shutdownWaiter: &sync.WaitGroup{},
 				jobHandlers:    make(map[string]handler),
 				wtr:            bytes.Buffer{},
 				jobs:           chs,
@@ -288,6 +290,7 @@ func Test_boxer_Count(t *testing.T) {
 				queues:         tt.fields.queues,
 				done:           tt.fields.done,
 				shutdownWaiter: tt.fields.shutdownWaiter,
+				shtdnLock:      &sync.Mutex{},
 				jobHandlers:    tt.fields.jobHandlers,
 				jobs:           tt.fields.jobs,
 			}
@@ -303,7 +306,8 @@ func Test_boxer_Fail(t *testing.T) {
 		Concurrency    int
 		queues         []string
 		done           chan interface{}
-		shutdownWaiter sync.WaitGroup
+		shutdownWaiter *sync.WaitGroup
+		shtdnLock      *sync.Mutex
 		jobHandlers    map[string]handler
 		wtr            bytes.Buffer
 		jobs           jobPayload
@@ -333,7 +337,8 @@ func Test_boxer_Fail(t *testing.T) {
 				Concurrency:    2,
 				queues:         []string{"default"},
 				done:           make(chan interface{}),
-				shutdownWaiter: sync.WaitGroup{},
+				shutdownWaiter: &sync.WaitGroup{},
+				shtdnLock:      &sync.Mutex{},
 				jobHandlers:    make(map[string]handler),
 				wtr:            bytes.Buffer{},
 				jobs:           chs,
@@ -351,6 +356,7 @@ func Test_boxer_Fail(t *testing.T) {
 				queues:         tt.fields.queues,
 				done:           tt.fields.done,
 				shutdownWaiter: tt.fields.shutdownWaiter,
+				shtdnLock:      tt.fields.shtdnLock,
 				jobHandlers:    tt.fields.jobHandlers,
 				jobs:           tt.fields.jobs,
 			}
@@ -367,7 +373,8 @@ func Test_boxer_Fetch(t *testing.T) {
 		Concurrency    int
 		queues         []string
 		done           chan interface{}
-		shutdownWaiter sync.WaitGroup
+		shutdownWaiter *sync.WaitGroup
+		shtdnLock      *sync.Mutex
 		jobHandlers    map[string]handler
 		wtr            bytes.Buffer
 		jobs           jobPayload
@@ -404,7 +411,8 @@ func Test_boxer_Fetch(t *testing.T) {
 				Concurrency:    2,
 				queues:         []string{"default"},
 				done:           make(chan interface{}),
-				shutdownWaiter: sync.WaitGroup{},
+				shutdownWaiter: &sync.WaitGroup{},
+				shtdnLock:      &sync.Mutex{},
 				jobHandlers:    make(map[string]handler),
 				wtr:            bytes.Buffer{},
 				jobs:           chs,
@@ -421,6 +429,7 @@ func Test_boxer_Fetch(t *testing.T) {
 				queues:         tt.fields.queues,
 				done:           tt.fields.done,
 				shutdownWaiter: tt.fields.shutdownWaiter,
+				shtdnLock:      tt.fields.shtdnLock,
 				jobHandlers:    tt.fields.jobHandlers,
 				jobs:           tt.fields.jobs,
 			}
@@ -442,7 +451,8 @@ func Test_boxer_Push(t *testing.T) {
 		Concurrency    int
 		queues         []string
 		done           chan interface{}
-		shutdownWaiter sync.WaitGroup
+		shutdownWaiter *sync.WaitGroup
+		shtdnLock      *sync.Mutex
 		jobHandlers    map[string]handler
 		wtr            bytes.Buffer
 		jobs           jobPayload
@@ -479,7 +489,8 @@ func Test_boxer_Push(t *testing.T) {
 				Concurrency:    2,
 				queues:         []string{"default"},
 				done:           make(chan interface{}),
-				shutdownWaiter: sync.WaitGroup{},
+				shutdownWaiter: &sync.WaitGroup{},
+				shtdnLock:      &sync.Mutex{},
 				jobHandlers:    make(map[string]handler),
 				wtr:            bytes.Buffer{},
 				jobs:           chs,
@@ -495,6 +506,7 @@ func Test_boxer_Push(t *testing.T) {
 				queues:         tt.fields.queues,
 				done:           tt.fields.done,
 				shutdownWaiter: tt.fields.shutdownWaiter,
+				shtdnLock:      tt.fields.shtdnLock,
 				jobHandlers:    tt.fields.jobHandlers,
 				jobs:           tt.fields.jobs,
 			}
@@ -598,6 +610,75 @@ func Test_processOne(t *testing.T) {
 			if err := processOne(tt.args.b); (err != nil) != tt.wantErr {
 				t.Errorf("processOne() error = %v, wantErr %v", err, tt.wantErr)
 			}
+		})
+	}
+}
+
+func Test_boxer_Terminate(t *testing.T) {
+	type fields struct {
+		Concurrency    int
+		queues         []string
+		done           chan interface{}
+		shutdownWaiter *sync.WaitGroup
+		shtdnLock      *sync.Mutex
+		jobHandlers    map[string]handler
+		jobs           jobPayload
+		count          int32
+		onFlyCounts    map[string]*int32
+		jobErrors      chan *job.Error
+	}
+	type args struct {
+		die bool
+	}
+
+	defaultChs := make(jobPayload, 1)
+	onFlyCountsDefault := make(map[string]*int32, 1)
+	for _, queue := range []string{"default"} {
+		defaultChs[queue] = make(chan []byte)
+		zero := int32(0)
+		onFlyCountsDefault[queue] = &zero
+	}
+
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+	}{
+		{
+			name: "ok",
+			fields: fields{
+				Concurrency:    runtime.NumCPU(),
+				queues:         []string{"high"},
+				done:           make(chan interface{}),
+				shutdownWaiter: &sync.WaitGroup{},
+				shtdnLock:      &sync.Mutex{},
+				jobHandlers:    make(map[string]handler),
+				jobs:           defaultChs,
+				count:          0,
+				onFlyCounts:    make(map[string]*int32, 1),
+				jobErrors:      make(chan *job.Error),
+			},
+			args: args{
+				die: true,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			b := &boxer{
+				Concurrency:    tt.fields.Concurrency,
+				queues:         tt.fields.queues,
+				done:           tt.fields.done,
+				shutdownWaiter: tt.fields.shutdownWaiter,
+				shtdnLock:      tt.fields.shtdnLock,
+				jobHandlers:    tt.fields.jobHandlers,
+				jobs:           tt.fields.jobs,
+				count:          tt.fields.count,
+				onFlyCounts:    tt.fields.onFlyCounts,
+				jobErrors:      tt.fields.jobErrors,
+			}
+			b.Run()
+			b.Terminate(tt.args.die)
 		})
 	}
 }

@@ -76,7 +76,8 @@ type boxer struct {
 	queues []string
 
 	done           chan interface{}
-	shutdownWaiter sync.WaitGroup
+	shutdownWaiter *sync.WaitGroup
+	shtdnLock      *sync.Mutex
 	jobHandlers    map[string]handler
 
 	jobs        jobPayload
@@ -102,7 +103,8 @@ func New(withMetrics bool, namespace, subsystem string, queues ...string) (Boxer
 		Concurrency:    runtime.NumCPU(),
 		queues:         queues,
 		done:           make(chan interface{}),
-		shutdownWaiter: sync.WaitGroup{},
+		shutdownWaiter: &sync.WaitGroup{},
+		shtdnLock:      &sync.Mutex{},
 		jobHandlers:    map[string]handler{},
 		jobs:           chs,
 		count:          0,
@@ -163,14 +165,18 @@ func (b *boxer) Error() <-chan *job.Error {
 
 func (b *boxer) Terminate(die bool) {
 	close(b.done)
+	b.shtdnLock.Lock()
 	b.shutdownWaiter.Wait()
+	b.shtdnLock.Unlock()
 	if die {
 		os.Exit(0)
 	}
 }
 
 func process(b *boxer) {
+	b.shtdnLock.Lock()
 	b.shutdownWaiter.Add(1)
+	b.shtdnLock.Unlock()
 	// pause between 0 and 0.5B nanoseconds (0 - 0.5 seconds)
 	time.Sleep(time.Duration(mathrand.Int31() / 4)) //nolint:gosec
 
