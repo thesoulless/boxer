@@ -14,16 +14,16 @@ import (
 type Job struct {
 	// Schedule should be used in order to implement task scheduling
 	// Schedule string
-	ID    string
-	Queue string
-	Type  string
-	Args  []interface{}
-	retry.Retry
+	ID          string        `json:"id"`
+	Queue       string        `json:"queue"`
+	Type        string        `json:"type"`
+	Args        []interface{} `json:"args"`
+	retry.Retry `json:"retry_._retry"`
 
 	// optional
-	CreatedAt string
+	CreatedAt string `json:"created_at"`
 
-	Backtrace int
+	Backtrace int `json:"backtrace"`
 }
 
 func New(jobType string, queue string, maxRetries int, args ...interface{}) *Job {

@@ -3,7 +3,6 @@ package boxer
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"math"
 	"reflect"
@@ -27,9 +26,14 @@ var (
 	result = make(chan int)
 )
 
-func Power2(_ context.Context, args ...interface{}) error {
-	x := args[0].(float64)
-	result <- int(math.Pow(2, x))
+type point struct {
+	x float64
+	y float64
+}
+
+func PowerN(_ context.Context, args ...interface{}) error {
+	p := args[0].(*point)
+	result <- int(math.Pow(p.x, p.y))
 	return nil
 }
 
@@ -47,14 +51,15 @@ func ExampleBoxer() {
 		panic(err)
 	}
 
-	b.Register("Power2", Power2)
+	b.Register("PowerN", PowerN)
 	b.Run()
 
-	j := job.New("Power2", queue, 1, 3)
+	j := job.New("PowerN", queue, 1, &point{x: 2, y: 3})
 	err = b.Push(j)
 	if err != nil {
 		panic(err)
 	}
+	time.Sleep(1 * time.Second)
 
 	r := <-result
 
@@ -68,14 +73,14 @@ func getHighBoxer() *boxer {
 	chs := make(jobPayload, 1)
 	onFlyCounts := make(map[string]*int32, 1)
 	for _, queue := range []string{"high"} {
-		chs[queue] = make(chan []byte)
+		chs[queue] = make(chan *job.Job)
 		zero := int32(0)
 		onFlyCounts[queue] = &zero
 	}
 	defaultChs := make(jobPayload, 1)
 	onFlyCountsDefault := make(map[string]*int32, 1)
 	for _, queue := range []string{"default"} {
-		defaultChs[queue] = make(chan []byte)
+		defaultChs[queue] = make(chan *job.Job)
 		zero := int32(0)
 		onFlyCountsDefault[queue] = &zero
 	}
@@ -95,7 +100,7 @@ func getDefaultBoxer() *boxer {
 	defaultChs := make(jobPayload, 1)
 	onFlyCountsDefault := make(map[string]*int32, 1)
 	for _, queue := range []string{"default"} {
-		defaultChs[queue] = make(chan []byte)
+		defaultChs[queue] = make(chan *job.Job)
 		zero := int32(0)
 		onFlyCountsDefault[queue] = &zero
 	}
@@ -254,10 +259,10 @@ func Test_boxer_Count(t *testing.T) {
 
 	queues := []string{"default"}
 
-	chs := make(map[string]chan []byte)
+	chs := make(map[string]chan *job.Job)
 	onFlyCounts := make(map[string]*int32, len(queues))
 	for _, queue := range queues {
-		chs[queue] = make(chan []byte)
+		chs[queue] = make(chan *job.Job)
 		zero := int32(0)
 		onFlyCounts[queue] = &zero
 	}
@@ -314,10 +319,10 @@ func Test_boxer_Fail(t *testing.T) {
 	}
 
 	queues := []string{"default"}
-	chs := make(map[string]chan []byte)
+	chs := make(map[string]chan *job.Job)
 	onFlyCounts := make(map[string]*int32, len(queues))
 	for _, queue := range queues {
-		chs[queue] = make(chan []byte)
+		chs[queue] = make(chan *job.Job)
 		zero := int32(0)
 		onFlyCounts[queue] = &zero
 	}
@@ -379,19 +384,18 @@ func Test_boxer_Fetch(t *testing.T) {
 		q []string
 	}
 	queues := []string{"default"}
-	chs := make(map[string]chan []byte)
+	chs := make(map[string]chan *job.Job)
 	onFlyCounts := make(map[string]*int32, len(queues))
 	for _, queue := range queues {
-		chs[queue] = make(chan []byte)
+		chs[queue] = make(chan *job.Job)
 		zero := int32(0)
 		onFlyCounts[queue] = &zero
 	}
 
-	j := job.New("Power2", "default", 0, 3)
+	j := job.New("PowerN", "default", 0, &point{x: 1, y: 4})
 	go func() {
-		jobBytes, _ := json.Marshal(j)
 		time.Sleep(1 * time.Second)
-		chs["default"] <- jobBytes
+		chs["default"] <- j
 	}()
 
 	tests := []struct {
@@ -457,15 +461,15 @@ func Test_boxer_Push(t *testing.T) {
 	}
 
 	queues := []string{"default"}
-	chs := make(map[string]chan []byte)
+	chs := make(map[string]chan *job.Job)
 	onFlyCounts := make(map[string]*int32, len(queues))
 	for _, queue := range queues {
-		chs[queue] = make(chan []byte)
+		chs[queue] = make(chan *job.Job)
 		zero := int32(0)
 		onFlyCounts[queue] = &zero
 	}
 
-	j := job.New("Power2", "default", 0, 3)
+	j := job.New("PowerN", "default", 0, &point{x: 2, y: 3})
 
 	go func() {
 		time.Sleep(1 * time.Second)
@@ -628,7 +632,7 @@ func Test_boxer_Terminate(t *testing.T) {
 	defaultChs := make(jobPayload, 1)
 	onFlyCountsDefault := make(map[string]*int32, 1)
 	for _, queue := range []string{"default"} {
-		defaultChs[queue] = make(chan []byte)
+		defaultChs[queue] = make(chan *job.Job)
 		zero := int32(0)
 		onFlyCountsDefault[queue] = &zero
 	}
@@ -653,7 +657,7 @@ func Test_boxer_Terminate(t *testing.T) {
 				jobErrors:      make(chan *job.Error),
 			},
 			args: args{
-				die: true,
+				die: false,
 			},
 		},
 	}

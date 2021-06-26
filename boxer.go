@@ -16,10 +16,8 @@ package boxer
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	mathrand "math/rand"
 	"os"
 	"os/signal"
@@ -68,7 +66,8 @@ type Boxer interface {
 	// Done()
 }
 
-type jobPayload map[string]chan []byte
+//type jobPayload map[string]chan []byte
+type jobPayload map[string]chan *job.Job
 
 type boxer struct {
 	Concurrency int
@@ -90,10 +89,10 @@ func New(withMetrics bool, namespace, subsystem string, queues ...string) (Boxer
 		queues = []string{"default"}
 	}
 
-	chs := make(map[string]chan []byte)
+	chs := make(map[string]chan *job.Job)
 	onFlyCounts := make(map[string]*int32, len(queues))
 	for _, queue := range queues {
-		chs[queue] = make(chan []byte)
+		chs[queue] = make(chan *job.Job)
 		zero := int32(0)
 		onFlyCounts[queue] = &zero
 	}
@@ -142,8 +141,8 @@ func (b *boxer) OnFlyCounts() map[string]int32 {
 }
 
 func (b *boxer) Run() {
+	b.shutdownWaiter.Add(b.Concurrency)
 	for i := 0; i < b.Concurrency; i++ {
-		b.shutdownWaiter.Add(1)
 		go process(b)
 	}
 
@@ -163,7 +162,7 @@ func (b *boxer) Error() <-chan *job.Error {
 }
 
 func (b *boxer) Terminate(die bool) {
-	close(b.done)
+	b.done <- true
 	b.shutdownWaiter.Wait()
 	if die {
 		os.Exit(0)
@@ -229,7 +228,7 @@ func processOne(b *boxer) error {
 	}
 
 	if joberr != nil {
-		log.Printf("error running %s job %s: %v", j.Type, j.ID, joberr)
+		// log.Printf("error running %s job %s: %v", j.Type, j.ID, joberr)
 		var backtrace []string
 
 		if j.Backtrace > 0 {
@@ -262,13 +261,21 @@ func (b *boxer) fail(job *job.Job) error {
 	}
 	job.Failed()
 
-	jobBytes, err := json.Marshal(job)
-	if err != nil {
-		return err
-	}
+	//jobBytes, err := json.Marshal(job)
+	//if err != nil {
+	//	return err
+	//}
+
+	//var buf bytes.Buffer
+	//enc := gob.NewEncoder(&buf)
+	//err := enc.Encode(job)
+	//if err != nil {
+	//	return err
+	//}
 
 	// pushes the job back to queue
-	b.jobs[job.Queue] <- jobBytes
+	//b.jobs[job.Queue] <- buf.Bytes()
+	b.jobs[job.Queue] <- job
 	return nil
 }
 
@@ -283,12 +290,7 @@ func dispatch(ctx context.Context, job *job.Job, runner handler) error {
 }
 
 func (b *boxer) Push(job *job.Job) error {
-	jobBytes, err := json.Marshal(job)
-	if err != nil {
-		return err
-	}
-
-	b.jobs[job.Queue] <- jobBytes
+	b.jobs[job.Queue] <- job
 	atomic.AddInt32(&b.count, 1)
 	return nil
 }
@@ -305,14 +307,5 @@ func (b *boxer) Fetch(q ...string) (*job.Job, error) {
 	}
 	data := <-ch
 
-	if len(data) == 0 {
-		return nil, nil
-	}
-
-	var j job.Job
-	err := json.Unmarshal(data, &j)
-	if err != nil {
-		return nil, err
-	}
-	return &j, nil
+	return data, nil
 }

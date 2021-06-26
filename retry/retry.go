@@ -12,7 +12,8 @@ import (
 type Retry struct {
 	MaxRetry int
 	retried  int
-	sync.RWMutex
+	//sync.RWMutex
+	sync.Mutex
 }
 
 // New create and returns a new Retry with MaxRetry set to max
@@ -30,8 +31,10 @@ func New(max int) Retry {
 // CanRetry return whether it can attempt fot another retry or
 // it reached to it's max retries
 func (r *Retry) CanRetry() bool {
-	r.RLock()
-	defer r.RUnlock()
+	//r.RLock()
+	//defer r.RUnlock()
+	r.Lock()
+	defer r.Unlock()
 	return r.retried < r.MaxRetry
 }
 
@@ -44,7 +47,9 @@ func (r *Retry) Failed() {
 
 // Retried returns number of retried times
 func (r *Retry) Retried() int {
-	r.RLock()
-	defer r.RUnlock()
+	//r.RLock()
+	//defer r.RUnlock()
+	r.Lock()
+	defer r.Unlock()
 	return r.retried
 }

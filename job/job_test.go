@@ -18,8 +18,8 @@ func TestBacktrace(t *testing.T) {
 	_, testingFile, _, _ := runtime.Caller(1)
 	_, asmFile, _, _ := runtime.Caller(2)
 	trace1 := fmt.Sprintf("in %s:36 github.com/thesoulless/boxer/job.TestBacktrace.func1", filename)
-	trace2 := fmt.Sprintf("in %s:1108 testing.tRunner", testingFile)
-	trace3 := fmt.Sprintf("in %s:1374 runtime.goexit", asmFile)
+	trace2 := fmt.Sprintf("in %s:1193 testing.tRunner", testingFile)
+	trace3 := fmt.Sprintf("in %s:1371 runtime.goexit", asmFile)
 	tests := []struct {
 		name string
 		args args
