@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"log"
 	"math"
 	"reflect"
 	"runtime"
@@ -33,8 +32,6 @@ type point struct {
 }
 
 func PowerN(_ context.Context, args ...interface{}) error {
-	log.Printf("dddd %#v\n", args[0])
-	//log.Printf("%v\n", args[0].(map[string]interface{}))
 	p := args[0].(*point)
 	result <- int(math.Pow(p.x, p.y))
 	return nil
@@ -396,15 +393,7 @@ func Test_boxer_Fetch(t *testing.T) {
 	}
 
 	j := job.New("PowerN", "default", 0, &point{x: 1, y: 4})
-	//var buf bytes.Buffer
-	//enc := gob.NewEncoder(&buf)
-	//err := enc.Encode(j)
-	//if err != nil {
-	//	t.Fatalf("failed to encode job %v\n job %#v", err, j)
-	//}
 	go func() {
-		//jobBytes, _ := json.Marshal(j)
-		//jobBytes := buf.Bytes()
 		time.Sleep(1 * time.Second)
 		chs["default"] <- j
 	}()

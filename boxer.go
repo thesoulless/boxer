@@ -18,7 +18,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	mathrand "math/rand"
 	"os"
 	"os/signal"
@@ -122,8 +121,6 @@ func New(withMetrics bool, namespace, subsystem string, queues ...string) (Boxer
 
 func (b *boxer) Register(name string, fn Runner) {
 	b.jobHandlers[name] = func(ctx context.Context, job *job.Job) error {
-		//log.Printf("h %v", job.Args[0])
-		//log.Printf("h2 %#v", &job.Args)
 		return fn(ctx, job.Args...)
 	}
 }
@@ -223,8 +220,6 @@ func processOne(b *boxer) error {
 		atomic.AddInt32(b.onFlyCounts[j.Queue], 1)
 	}
 
-	log.Printf("j1 %v", j.Args[0])
-	log.Printf("j2 %v", j.Args)
 	joberr := dispatch(jobContext(j), j, runner)
 
 	// decrease the onFlyCount
@@ -233,7 +228,7 @@ func processOne(b *boxer) error {
 	}
 
 	if joberr != nil {
-		log.Printf("error running %s job %s: %v", j.Type, j.ID, joberr)
+		// log.Printf("error running %s job %s: %v", j.Type, j.ID, joberr)
 		var backtrace []string
 
 		if j.Backtrace > 0 {
@@ -295,18 +290,7 @@ func dispatch(ctx context.Context, job *job.Job, runner handler) error {
 }
 
 func (b *boxer) Push(job *job.Job) error {
-	log.Printf("bm1 %v", job.Args)
-	//jobBytes, err := json.Marshal(job)
-	//var buf bytes.Buffer
-	//enc := gob.NewEncoder(&buf)
-	//err := enc.Encode(job)
-	//if err != nil {
-	//	log.Printf("err %v", err)
-	//	return err
-	//}
-
 	b.jobs[job.Queue] <- job
-	//b.jobs[job.Queue] <- buf.Bytes()
 	atomic.AddInt32(&b.count, 1)
 	return nil
 }
@@ -323,19 +307,5 @@ func (b *boxer) Fetch(q ...string) (*job.Job, error) {
 	}
 	data := <-ch
 
-	//if len(data) == 0 {
-	//	return nil, nil
-	//}
-
-	//var j job.Job
-	//err := json.Unmarshal(data, &j)
-	//buf := bytes.Buffer{}
-	//buf.Write(data)
-	//dec := gob.NewDecoder(&buf)
-	//err := dec.Decode(&j)
-	//if err != nil {
-	//	return nil, err
-	//}
-	log.Printf("fm1 %v", data.Args)
 	return data, nil
 }

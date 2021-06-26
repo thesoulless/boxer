@@ -4,7 +4,6 @@ import (
 	cryptorand "crypto/rand"
 	"encoding/base64"
 	"fmt"
-	"log"
 	mathrand "math/rand"
 	"runtime"
 	"time"
@@ -34,7 +33,6 @@ func New(jobType string, queue string, maxRetries int, args ...interface{}) *Job
 	if maxRetries < 0 {
 		maxRetries = 0
 	}
-	log.Printf("ij %v", args[0])
 	return &Job{
 		Type:      jobType,
 		Queue:     queue,

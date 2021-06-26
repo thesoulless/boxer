@@ -1,6 +1,6 @@
 module github.com/thesoulless/boxer
 
-go 1.15
+go 1.16
 
 require (
 	github.com/google/go-cmp v0.4.0
