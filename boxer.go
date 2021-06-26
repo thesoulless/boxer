@@ -16,7 +16,6 @@ package boxer
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -68,7 +67,8 @@ type Boxer interface {
 	// Done()
 }
 
-type jobPayload map[string]chan []byte
+//type jobPayload map[string]chan []byte
+type jobPayload map[string]chan *job.Job
 
 type boxer struct {
 	Concurrency int
@@ -90,10 +90,10 @@ func New(withMetrics bool, namespace, subsystem string, queues ...string) (Boxer
 		queues = []string{"default"}
 	}
 
-	chs := make(map[string]chan []byte)
+	chs := make(map[string]chan *job.Job)
 	onFlyCounts := make(map[string]*int32, len(queues))
 	for _, queue := range queues {
-		chs[queue] = make(chan []byte)
+		chs[queue] = make(chan *job.Job)
 		zero := int32(0)
 		onFlyCounts[queue] = &zero
 	}
@@ -122,6 +122,8 @@ func New(withMetrics bool, namespace, subsystem string, queues ...string) (Boxer
 
 func (b *boxer) Register(name string, fn Runner) {
 	b.jobHandlers[name] = func(ctx context.Context, job *job.Job) error {
+		//log.Printf("h %v", job.Args[0])
+		//log.Printf("h2 %#v", &job.Args)
 		return fn(ctx, job.Args...)
 	}
 }
@@ -142,8 +144,8 @@ func (b *boxer) OnFlyCounts() map[string]int32 {
 }
 
 func (b *boxer) Run() {
+	b.shutdownWaiter.Add(b.Concurrency)
 	for i := 0; i < b.Concurrency; i++ {
-		b.shutdownWaiter.Add(1)
 		go process(b)
 	}
 
@@ -163,7 +165,7 @@ func (b *boxer) Error() <-chan *job.Error {
 }
 
 func (b *boxer) Terminate(die bool) {
-	close(b.done)
+	b.done <- true
 	b.shutdownWaiter.Wait()
 	if die {
 		os.Exit(0)
@@ -221,6 +223,8 @@ func processOne(b *boxer) error {
 		atomic.AddInt32(b.onFlyCounts[j.Queue], 1)
 	}
 
+	log.Printf("j1 %v", j.Args[0])
+	log.Printf("j2 %v", j.Args)
 	joberr := dispatch(jobContext(j), j, runner)
 
 	// decrease the onFlyCount
@@ -262,13 +266,21 @@ func (b *boxer) fail(job *job.Job) error {
 	}
 	job.Failed()
 
-	jobBytes, err := json.Marshal(job)
-	if err != nil {
-		return err
-	}
+	//jobBytes, err := json.Marshal(job)
+	//if err != nil {
+	//	return err
+	//}
+
+	//var buf bytes.Buffer
+	//enc := gob.NewEncoder(&buf)
+	//err := enc.Encode(job)
+	//if err != nil {
+	//	return err
+	//}
 
 	// pushes the job back to queue
-	b.jobs[job.Queue] <- jobBytes
+	//b.jobs[job.Queue] <- buf.Bytes()
+	b.jobs[job.Queue] <- job
 	return nil
 }
 
@@ -283,12 +295,18 @@ func dispatch(ctx context.Context, job *job.Job, runner handler) error {
 }
 
 func (b *boxer) Push(job *job.Job) error {
-	jobBytes, err := json.Marshal(job)
-	if err != nil {
-		return err
-	}
+	log.Printf("bm1 %v", job.Args)
+	//jobBytes, err := json.Marshal(job)
+	//var buf bytes.Buffer
+	//enc := gob.NewEncoder(&buf)
+	//err := enc.Encode(job)
+	//if err != nil {
+	//	log.Printf("err %v", err)
+	//	return err
+	//}
 
-	b.jobs[job.Queue] <- jobBytes
+	b.jobs[job.Queue] <- job
+	//b.jobs[job.Queue] <- buf.Bytes()
 	atomic.AddInt32(&b.count, 1)
 	return nil
 }
@@ -305,14 +323,19 @@ func (b *boxer) Fetch(q ...string) (*job.Job, error) {
 	}
 	data := <-ch
 
-	if len(data) == 0 {
-		return nil, nil
-	}
+	//if len(data) == 0 {
+	//	return nil, nil
+	//}
 
-	var j job.Job
-	err := json.Unmarshal(data, &j)
-	if err != nil {
-		return nil, err
-	}
-	return &j, nil
+	//var j job.Job
+	//err := json.Unmarshal(data, &j)
+	//buf := bytes.Buffer{}
+	//buf.Write(data)
+	//dec := gob.NewDecoder(&buf)
+	//err := dec.Decode(&j)
+	//if err != nil {
+	//	return nil, err
+	//}
+	log.Printf("fm1 %v", data.Args)
+	return data, nil
 }
