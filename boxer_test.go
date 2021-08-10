@@ -54,7 +54,7 @@ func ExampleBoxer() {
 	b.Register("PowerN", PowerN)
 	b.Run()
 
-	j := job.New("PowerN", queue, 1, &point{x: 2, y: 3})
+	j := job.New("PowerN", queue, 1, 0, &point{x: 2, y: 3})
 	err = b.Push(j)
 	if err != nil {
 		panic(err)
@@ -205,6 +205,7 @@ func TestNewJob(t *testing.T) {
 		jobType    string
 		queue      string
 		maxRetries int
+		delay      time.Duration
 		args       []interface{}
 	}
 
@@ -239,7 +240,7 @@ func TestNewJob(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := job.New(tt.args.jobType, tt.args.queue, tt.args.maxRetries, tt.args.args...); !reflect.DeepEqual(got.Type, tt.want.Type) {
+			if got := job.New(tt.args.jobType, tt.args.queue, tt.args.maxRetries, tt.args.delay, tt.args.args...); !reflect.DeepEqual(got.Type, tt.want.Type) {
 				t.Errorf("NewJob() = %v, want %v", got, tt.want)
 			}
 		})
@@ -392,7 +393,7 @@ func Test_boxer_Fetch(t *testing.T) {
 		onFlyCounts[queue] = &zero
 	}
 
-	j := job.New("PowerN", "default", 0, &point{x: 1, y: 4})
+	j := job.New("PowerN", "default", 0, 0, &point{x: 1, y: 4})
 	go func() {
 		time.Sleep(1 * time.Second)
 		chs["default"] <- j
@@ -469,7 +470,7 @@ func Test_boxer_Push(t *testing.T) {
 		onFlyCounts[queue] = &zero
 	}
 
-	j := job.New("PowerN", "default", 0, &point{x: 2, y: 3})
+	j := job.New("PowerN", "default", 0, 0, &point{x: 2, y: 3})
 
 	go func() {
 		time.Sleep(1 * time.Second)

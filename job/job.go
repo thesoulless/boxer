@@ -18,6 +18,7 @@ type Job struct {
 	Queue       string        `json:"queue"`
 	Type        string        `json:"type"`
 	Args        []interface{} `json:"args"`
+	Delay       time.Duration `json:"delay"`
 	retry.Retry `json:"retry_._retry"`
 
 	// optional
@@ -26,7 +27,7 @@ type Job struct {
 	Backtrace int `json:"backtrace"`
 }
 
-func New(jobType string, queue string, maxRetries int, args ...interface{}) *Job {
+func New(jobType string, queue string, maxRetries int, delay time.Duration, args ...interface{}) *Job {
 	if queue == "" {
 		queue = "default"
 	}
@@ -40,6 +41,7 @@ func New(jobType string, queue string, maxRetries int, args ...interface{}) *Job
 		ID:        RandomID(),
 		CreatedAt: time.Now().UTC().Format(time.RFC3339Nano),
 		Retry:     retry.New(maxRetries),
+		Delay:     delay,
 	}
 }
 

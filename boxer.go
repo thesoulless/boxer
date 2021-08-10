@@ -220,6 +220,9 @@ func processOne(b *boxer) error {
 		atomic.AddInt32(b.onFlyCounts[j.Queue], 1)
 	}
 
+	if j.Delay > 0 {
+		time.Sleep(j.Delay)
+	}
 	joberr := dispatch(jobContext(j), j, runner)
 
 	// decrease the onFlyCount
