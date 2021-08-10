@@ -29,8 +29,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/thesoulless/boxer"
-	"github.com/thesoulless/boxer/job"
+	"github.com/thesoulless/boxer/v2"
+	"github.com/thesoulless/boxer/v2/job"
 )
 
 func Power2(_ context.Context, args ...interface{}) error {

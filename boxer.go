@@ -26,9 +26,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/thesoulless/boxer/job"
+	"github.com/thesoulless/boxer/v2/job"
 
-	"github.com/thesoulless/boxer/metrics"
+	"github.com/thesoulless/boxer/v2/metrics"
 
 	"sync/atomic"
 )

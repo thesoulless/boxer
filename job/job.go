@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/thesoulless/boxer/retry"
+	"github.com/thesoulless/boxer/v2/retry"
 )
 
 type Job struct {

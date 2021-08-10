@@ -3,9 +3,8 @@ package metrics_test
 import (
 	"testing"
 
-	"github.com/thesoulless/boxer/metrics"
-
-	"github.com/thesoulless/boxer"
+	"github.com/thesoulless/boxer/v2"
+	"github.com/thesoulless/boxer/v2/metrics"
 )
 
 func TestNew(t *testing.T) {

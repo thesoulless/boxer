@@ -1,4 +1,4 @@
-module github.com/thesoulless/boxer
+module github.com/thesoulless/boxer/v2
 
 go 1.16
 

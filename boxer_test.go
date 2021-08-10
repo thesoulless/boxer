@@ -15,9 +15,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/thesoulless/boxer/job"
+	"github.com/thesoulless/boxer/v2/job"
 
-	"github.com/thesoulless/boxer/retry"
+	"github.com/thesoulless/boxer/v2/retry"
 
 	"github.com/google/uuid"
 )
