@@ -1,4 +1,4 @@
-# Boxer
+# Boxer V2
 ![Tests](https://github.com/thesoulless/boxer/workflows/Tests/badge.svg?branch=master)
 ![](https://img.shields.io/github/v/tag/thesoulless/boxer?label=&logo=github&sort=semver)
 ![](https://img.shields.io/badge/godoc-docs-blue?label=&logo=go)
@@ -29,8 +29,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/thesoulless/boxer"
-	"github.com/thesoulless/boxer/job"
+	"github.com/thesoulless/boxer/v2"
+	"github.com/thesoulless/boxer/v2/job"
 )
 
 func Power2(_ context.Context, args ...interface{}) error {

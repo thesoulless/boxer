@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"runtime"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -17,7 +18,7 @@ func TestBacktrace(t *testing.T) {
 	_, filename, _, _ := runtime.Caller(0)
 	_, testingFile, _, _ := runtime.Caller(1)
 	_, asmFile, _, _ := runtime.Caller(2)
-	trace1 := fmt.Sprintf("in %s:36 github.com/thesoulless/boxer/job.TestBacktrace.func1", filename)
+	trace1 := fmt.Sprintf("in %s:37 github.com/thesoulless/boxer/v2/job.TestBacktrace.func1", filename)
 	trace2 := fmt.Sprintf("in %s:1193 testing.tRunner", testingFile)
 	trace3 := fmt.Sprintf("in %s:1371 runtime.goexit", asmFile)
 	tests := []struct {
@@ -45,6 +46,7 @@ func TestNew(t *testing.T) {
 		jobType    string
 		queue      string
 		maxRetries int
+		delay      time.Duration
 		args       []interface{}
 	}
 
@@ -62,6 +64,7 @@ func TestNew(t *testing.T) {
 				jobType:    "SomeJob",
 				queue:      "default",
 				maxRetries: 3,
+				delay:      time.Second * 3,
 				args:       a1,
 			},
 			want: &Job{
@@ -73,7 +76,7 @@ func TestNew(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := New(tt.args.jobType, tt.args.queue, tt.args.maxRetries, tt.args.args...)
+			got := New(tt.args.jobType, tt.args.queue, tt.args.maxRetries, tt.args.delay, tt.args.args...)
 			if !assert.Equal(t, tt.want.Queue, got.Queue) || !assert.Equal(t, tt.want.Type, got.Type, tt.want.Args, got.Args) {
 				t.Errorf("New() = %v, want %v", got, tt.want)
 			}
